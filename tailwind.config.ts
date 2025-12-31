@@ -8,8 +8,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#020617",
-        foreground: "#e5e7eb",
+        background: "#ffffff",
+        foreground: "#0f172a",
         primary: {
           50: "#eff6ff",
           100: "#dbeafe",
@@ -22,11 +22,11 @@ const config: Config = {
           800: "#1e40af",
           900: "#1e3a8a"
         },
-        card: "#020617",
-        muted: "#1f2937"
+        card: "#ffffff",
+        muted: "#f1f5f9"
       },
       boxShadow: {
-        soft: "0 18px 40px rgba(15, 23, 42, 0.65)",
+        soft: "0 18px 40px rgba(15, 23, 42, 0.1)",
       },
       borderRadius: {
         xl: "1.25rem",

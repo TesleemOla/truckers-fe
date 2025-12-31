@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Loader2 } from "lucide-react";
-import { createManifest } from "@/lib/api";
+import { FileText, Loader2, MapPin } from "lucide-react";
+import { createManifest, getTrucks, getUsersByRole, Truck } from "@/lib/api";
 
 export default function NewManifestPage() {
   const router = useRouter();
   const [manifestNumber, setManifestNumber] = useState("");
+  const [ allTrucks, setAllTrucks ] = useState<Array<Truck>>([]);
   const [truck, setTruck] = useState("");
   const [driver, setDriver] = useState("");
+  const [allDrivers, setAllDrivers] = useState<Array<{_id: string; name: string; email: string; role: string}>>([]);
   const [origin, setOrigin] = useState({
     address: "",
     latitude: "",
@@ -24,6 +26,43 @@ export default function NewManifestPage() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(()=>{
+    document.title = "New Manifest - Truckers App";
+    getTrucks().then((data)=>{
+    setAllTrucks(data);
+    }).catch((err)=>{
+      console.error("Failed to fetch trucks:", err);
+    });
+
+    getUsersByRole('driver').then((data)=>{
+      setAllDrivers(data);
+    }).catch((err)=>{
+      console.error("Failed to fetch drivers:", err);
+    });
+    
+    return ()=>{
+      // Cleanup if needed
+      }
+  },[])
+
+  async function handleGeocodeOrigin(stater: 'origin' | 'destination' = 'origin') {
+    if (!origin.address) return;
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          origin.address
+        )}`
+      );
+      const data = await res.json();
+      if (data && data[0]) {
+        stater === 'origin' ? setOrigin((o) => ({ ...o, latitude: data[0].lat, longitude: data[0].lon })):
+        setDestination((d) => ({ ...d, latitude: data[0].lat, longitude: data[0].lon }));
+      }
+    } catch (err) {
+      console.error("Geocoding failed", err);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,10 +103,10 @@ export default function NewManifestPage() {
           <FileText className="h-4 w-4" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-50">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">
             New manifest
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-600">
             Create a new route with origin, destination, and cargo details.
           </p>
         </div>
@@ -79,60 +118,73 @@ export default function NewManifestPage() {
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Manifest number
             </label>
             <input
               required
               value={manifestNumber}
               onChange={(e) => setManifestNumber(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Truck ID
             </label>
-            <input
+            <select
               required
               value={truck}
               onChange={(e) => setTruck(e.target.value)}
-              placeholder="Mongo ObjectId"
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-[11px] text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
-            />
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-[11px] text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="">Select a truck</option>
+              {allTrucks.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.truckNumber } - {t.licensePlate}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Driver ID
             </label>
-            <input
+            <select
               required
               value={driver}
               onChange={(e) => setDriver(e.target.value)}
-              placeholder="Mongo ObjectId"
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-[11px] text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
-            />
+
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-[11px] text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="">Select a driver</option>
+              {allDrivers.map((d) => (
+                <option key={d._id} value={d._id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="sm:col-span-2 space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Cargo description
             </label>
             <input
               value={cargoDescription}
               onChange={(e) => setCargoDescription(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-slate-200">Origin</p>
+            <p className="text-xs font-semibold text-slate-800">Origin</p>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-slate-300">
+              <label className="text-[11px] font-medium text-slate-700">
                 Address
               </label>
               <input
@@ -141,12 +193,22 @@ export default function NewManifestPage() {
                 onChange={(e) =>
                   setOrigin((o) => ({ ...o, address: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               />
+              <button
+                type="button"
+                onClick={()=>handleGeocodeOrigin('origin')}
+                className="mb-[1px] inline-flex h-[38px] w-[38px] items-center justify-center rounded-xl border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                title="Get coordinates from address"
+              >
+                <MapPin className="h-4 w-4" />
+            </button>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2">
+            
+            <div className="flex items-end gap-2">
+              <div className="grid flex-1 gap-2 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-300">
+                <label className="text-[11px] font-medium text-slate-700">
                   Latitude
                 </label>
                 <input
@@ -155,11 +217,11 @@ export default function NewManifestPage() {
                   onChange={(e) =>
                     setOrigin((o) => ({ ...o, latitude: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-300">
+                <label className="text-[11px] font-medium text-slate-700">
                   Longitude
                 </label>
                 <input
@@ -168,18 +230,20 @@ export default function NewManifestPage() {
                   onChange={(e) =>
                     setOrigin((o) => ({ ...o, longitude: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
+              </div>
+              
             </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-slate-200">
+            <p className="text-xs font-semibold text-slate-800">
               Destination
             </p>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-slate-300">
+              <label className="text-[11px] font-medium text-slate-700">
                 Address
               </label>
               <input
@@ -188,12 +252,21 @@ export default function NewManifestPage() {
                 onChange={(e) =>
                   setDestination((d) => ({ ...d, address: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               />
+              <button
+                type="button"
+                onClick={()=>handleGeocodeOrigin('destination')}
+                className="mb-[1px] inline-flex h-[38px] w-[38px] items-center justify-center rounded-xl border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                title="Get coordinates from address"
+              >
+                <MapPin className="h-4 w-4" />
+              </button>
             </div>
+            
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-300">
+                <label className="text-[11px] font-medium text-slate-700">
                   Latitude
                 </label>
                 <input
@@ -205,11 +278,11 @@ export default function NewManifestPage() {
                       latitude: e.target.value,
                     }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-300">
+                <label className="text-[11px] font-medium text-slate-700">
                   Longitude
                 </label>
                 <input
@@ -221,22 +294,23 @@ export default function NewManifestPage() {
                       longitude: e.target.value,
                     }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
+              
             </div>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-slate-700">
             Notes
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
 
@@ -271,5 +345,3 @@ export default function NewManifestPage() {
     </div>
   );
 }
-
-

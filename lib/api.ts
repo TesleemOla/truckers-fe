@@ -140,6 +140,12 @@ export async function getProfile() {
   return apiFetch<AuthUser | null>("/auth/profile");
 }
 
+export async function getAllUsers() {
+  return apiFetch<Array<{ _id: string; name: string; email: string; role: string }>>("/users/all");
+}
+export async function getUsersByRole(role: string) {
+  return apiFetch<Array<{ _id: string; name: string; email: string; role: string }>>(`/users/${role}`);
+}
 export async function getTrucks() {
   return apiFetch<Truck[]>("/trucks");
 }

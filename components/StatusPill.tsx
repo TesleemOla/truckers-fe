@@ -3,9 +3,9 @@ function StatusPill({ status }: { status?: string }) {
   const normalized = status.toLowerCase();
 
   const styles: Record<string, string> = {
-    idle: "bg-slate-800 text-slate-100 border-slate-700",
-    "in-transit": "bg-amber-500/15 text-amber-300 border-amber-500/50",
-    completed: "bg-emerald-500/15 text-emerald-300 border-emerald-500/50",
+    idle: "bg-slate-100 text-slate-800 border-slate-300",
+    "in-transit": "bg-amber-50 text-amber-700 border-amber-200",
+    completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
   };
 
   const label =
@@ -15,7 +15,7 @@ function StatusPill({ status }: { status?: string }) {
 
   const className =
     styles[normalized] ??
-    "bg-slate-800 text-slate-100 border-slate-700";
+    "bg-slate-100 text-slate-800 border-slate-300";
 
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>

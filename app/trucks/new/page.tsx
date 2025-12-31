@@ -42,14 +42,14 @@ export default function NewTruckPage() {
   return (
     <div className="mx-auto max-w-xl space-y-5">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-500/10 text-primary-300">
+        <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-100 text-primary-600">
           <Truck className="h-4 w-4" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-50">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">
             New truck
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-600">
             Register a new vehicle in your fleet.
           </p>
         </div>
@@ -61,52 +61,52 @@ export default function NewTruckPage() {
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Truck number
             </label>
             <input
               required
               value={truckNumber}
               onChange={(e) => setTruckNumber(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               License plate
             </label>
             <input
               required
               value={licensePlate}
               onChange={(e) => setLicensePlate(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Make
             </label>
             <input
               value={make}
               onChange={(e) => setMake(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Model
             </label>
             <input
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-slate-700">
               Year
             </label>
             <input
@@ -115,19 +115,19 @@ export default function NewTruckPage() {
               onChange={(e) =>
                 setYear(e.target.value === "" ? "" : Number(e.target.value))
               }
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-slate-700">
             Status
           </label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
           >
             <option value="available">Available</option>
             <option value="in-transit">In transit</option>

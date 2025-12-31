@@ -29,7 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
     } catch (err) {
       setUser(null);
-      setError(err instanceof Error ? err.message : "Failed to check authentication");
+      setError(err instanceof Error ? err.message : "Not Authenticated. Please log in.");
+      router.push("/login");
     } finally {
       setLoading(false);
     }

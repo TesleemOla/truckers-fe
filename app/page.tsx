@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import {
   type AuthUser,
   type Truck,
@@ -10,21 +9,15 @@ import TrucksCard from "@/components/TrucksCard";
 import { serverApiFetch } from "@/lib/server-api";
 
 async function loadData() {
+  // Middleware ensures user is authenticated, so we can safely fetch data
   const [user, trucks, manifests] = await Promise.all([
-    serverApiFetch<AuthUser | null>("/auth/profile"),
+    serverApiFetch<AuthUser>("/auth/profile"),
     serverApiFetch<Truck[]>("/trucks"),
     serverApiFetch<Manifest[]>("/manifests"),
   ]);
- 
-
-  if (!user) {
-    redirect("/login");
-  }
 
   return { user, trucks, manifests };
 }
-
-
 
 export default async function DashboardPage() {
   const { user, trucks, manifests } = await loadData();
@@ -33,15 +26,15 @@ export default async function DashboardPage() {
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-300">
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary-600">
             Overview
           </p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
             Good day, {user?.user?.name}
           </h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-600">
             You&apos;re signed in as{" "}
-            <span className="font-medium text-slate-200">
+            <span className="font-medium text-slate-800">
               {user?.user?.role}
             </span>
             . Monitor trucks, manifests, and drivers in one place.
@@ -54,7 +47,7 @@ export default async function DashboardPage() {
         >
           <button
             type="submit"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 text-xs"
+            className="btn-ghost inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs"
           >
             <LogOut className="h-3.5 w-3.5" />
             Sign out
