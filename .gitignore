@@ -5,3 +5,8 @@ build
 dist
 .vscode
 .DS_Store
+.vscode
+
+.env
+
+.env.local
