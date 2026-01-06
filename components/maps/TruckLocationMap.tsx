@@ -1,10 +1,11 @@
-
+"use client"
+import { Loader } from "lucide-react";
 import dynamic from "next/dynamic";
 
-const DynamicOpenStreetMapBase = dynamic(
-  () => import("./OpenStreetMapBase"),
-  { ssr: false }
-);
+const OpenStreetMapBase = dynamic(() => import('./OpenStreetMapBase'), {
+  ssr: false,
+  loading: () => <Loader />,
+});
 
 
 type TruckLocation = {
@@ -26,7 +27,7 @@ export function TruckLocationMap({ location }: { location?: TruckLocation }) {
 
   return (
     <div className="space-y-2"> 
-      <DynamicOpenStreetMapBase center={center} zoom={9} markers={[center]} markerLabels={["Truck Location"]} />
+      <OpenStreetMapBase center={center} zoom={9} markers={[center]} markerLabels={["Truck Location"]} />
       {location.address && (
         <p className="text-[11px] text-slate-600">
           Last reported location: <span className="text-slate-800 font-medium">{location.address}</span>

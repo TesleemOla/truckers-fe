@@ -1,6 +1,12 @@
 "use client";
 
 import  OpenStreetMapBase  from "./OpenStreetMapBase";
+import dynamic from "next/dynamic";
+
+const DynamicOpenStreetMapBase = dynamic(
+  () => Promise.resolve(OpenStreetMapBase),
+  { ssr: false }
+);
 
 type Point = {
   latitude?: number;
@@ -42,7 +48,7 @@ export function ManifestRouteMap({
 
   return (
     <div className="space-y-2">
-      <OpenStreetMapBase
+      <DynamicOpenStreetMapBase
         center={originLatLng}
         zoom={7}
         markers={markers}

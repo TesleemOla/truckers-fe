@@ -27,26 +27,16 @@ export default function OpenStreetMapBase({
   polyline?: LatLng[];
   markerLabels?: string[];
 }) {
-  /**
-   * Fix Leaflet default marker icons
-   * Must run on the client only
-   */
   useEffect(() => {
     delete (Icon.Default.prototype as any)._getIconUrl;
 
     Icon.Default.mergeOptions({
-      iconRetinaUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-      iconUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-      shadowUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     });
   }, []);
 
-  /**
-   * Stable key forces Leaflet teardown on real center/zoom changes
-   */
   const mapKey = useMemo(
     () => `${center.lat}-${center.lng}-${zoom}`,
     [center.lat, center.lng, zoom]
