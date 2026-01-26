@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
 import Link from "next/link";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Truckers Dashboard",
@@ -41,10 +42,9 @@ export default function RootLayout({
           <main className="flex-1">
             <AuthProvider>{children}</AuthProvider>
           </main>
+          <Toaster richColors position="top-right" />
         </div>
       </body>
     </html>
   );
 }
-
-

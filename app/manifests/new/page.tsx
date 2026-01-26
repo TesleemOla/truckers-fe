@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { FileText, Loader2, MapPin } from "lucide-react";
 import { createManifest, getTrucks, getUsersByRole, Truck } from "@/lib/api";
 
@@ -25,20 +26,19 @@ export default function NewManifestPage() {
   const [cargoDescription, setCargoDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(()=>{
     document.title = "New Manifest - Truckers App";
     getTrucks().then((data)=>{
     setAllTrucks(data);
     }).catch((err)=>{
-      console.error("Failed to fetch trucks:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to fetch trucks.");
     });
 
     getUsersByRole('driver').then((data)=>{
       setAllDrivers(data);
     }).catch((err)=>{
-      console.error("Failed to fetch drivers:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to fetch drivers.");
     });
     
     return ()=>{
@@ -47,26 +47,32 @@ export default function NewManifestPage() {
   },[])
 
   async function handleGeocodeOrigin(stater: 'origin' | 'destination' = 'origin') {
-    if (!origin.address) return;
+    const address = stater === 'origin' ? origin.address : destination.address;
+    if (!address) {
+      toast.info("Please enter an address to geocode.");
+      return;
+    }
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          origin.address
+          address
         )}`
       );
       const data = await res.json();
       if (data && data[0]) {
         stater === 'origin' ? setOrigin((o) => ({ ...o, latitude: data[0].lat, longitude: data[0].lon })):
         setDestination((d) => ({ ...d, latitude: data[0].lat, longitude: data[0].lon }));
+        toast.success("Coordinates found for address.");
+      } else {
+        toast.error("Could not find coordinates for the address.");
       }
     } catch (err) {
-      console.error("Geocoding failed", err);
+      toast.error(err instanceof Error ? err.message : "Geocoding failed.");
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
     setLoading(true);
     try {
       const created = await createManifest({
@@ -86,9 +92,10 @@ export default function NewManifestPage() {
         cargoDescription: cargoDescription || undefined,
         notes: notes || undefined,
       });
+      toast.success("Manifest created successfully.");
       router.push(`/manifests/${created._id}`);
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof Error ? err.message : "Unable to create manifest.",
       );
     } finally {
@@ -313,10 +320,6 @@ export default function NewManifestPage() {
             className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
-
-        {error && (
-          <p className="text-xs font-medium text-rose-400">{error}</p>
-        )}
 
         <div className="flex justify-end gap-2 pt-1">
           <button

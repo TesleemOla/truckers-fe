@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { AlertTriangle, Loader2, MapPin, Trash2, Truck } from "lucide-react";
 import {
   deleteTruck,
@@ -17,7 +18,6 @@ export default function TruckDetailPage() {
   const router = useRouter();
   const [truck, setTruck] = useState<TruckType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [locationSaving, setLocationSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -56,9 +56,7 @@ export default function TruckDetailPage() {
           address: data.currentLocation?.address ?? "",
         });
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load truck.",
-        );
+        toast.error(err instanceof Error ? err.message : "Failed to load truck.");
       } finally {
         setLoading(false);
       }
@@ -69,7 +67,6 @@ export default function TruckDetailPage() {
     e.preventDefault();
     if (!truck) return;
     setSaving(true);
-    setError(null);
     try {
       const updated = await updateTruck(truck._id, {
         truckNumber: form.truckNumber,
@@ -80,10 +77,9 @@ export default function TruckDetailPage() {
         status: form.status,
       });
       setTruck(updated);
+      toast.success("Truck details saved successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to save changes.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to save changes.");
     } finally {
       setSaving(false);
     }
@@ -93,7 +89,6 @@ export default function TruckDetailPage() {
     e.preventDefault();
     if (!truck) return;
     setLocationSaving(true);
-    setError(null);
     try {
       const updated = await updateTruckLocation(truck._id, {
         latitude: Number(locationForm.latitude),
@@ -101,10 +96,9 @@ export default function TruckDetailPage() {
         address: locationForm.address || undefined,
       });
       setTruck(updated);
+      toast.success("Truck location updated successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to update location.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to update location.");
     } finally {
       setLocationSaving(false);
     }
@@ -113,14 +107,12 @@ export default function TruckDetailPage() {
   async function handleDelete() {
     if (!truck) return;
     setSaving(true);
-    setError(null);
     try {
       await deleteTruck(truck._id);
+      toast.success("Truck deleted successfully.");
       router.push("/trucks");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to delete truck.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to delete truck.");
     } finally {
       setSaving(false);
     }
@@ -166,19 +158,12 @@ export default function TruckDetailPage() {
         <button
           type="button"
           onClick={() => setConfirmDelete(true)}
-          className="btn-ghost inline-flex items-center gap-1.5 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/10 hover:text-red-200"
+          className="bg-red-600 inline-flex items-center gap-1.5 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-100 hover:bg-red-500/10 hover:text-red-200"
         >
           <Trash2 className="h-3.5 w-3.5" />
           Delete
         </button>
       </div>
-
-      {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-950/40 px-4 py-2 text-xs text-rose-200">
-          <AlertTriangle className="h-3.5 w-3.5" />
-          {error}
-        </div>
-      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <form
@@ -199,7 +184,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, truckNumber: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="space-y-1.5">
@@ -212,7 +197,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, licensePlate: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
           </div>
@@ -227,7 +212,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, make: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="space-y-1.5">
@@ -239,7 +224,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, model: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="space-y-1.5">
@@ -252,7 +237,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, year: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
           </div>
@@ -266,7 +251,7 @@ export default function TruckDetailPage() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, status: e.target.value }))
               }
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             >
               <option value="available">Available</option>
               <option value="in-transit">In transit</option>
@@ -309,7 +294,7 @@ export default function TruckDetailPage() {
             </div>
           </div>
 
-          <TruckLocationMap location={truck.currentLocation} />
+          {/* <TruckLocationMap location={truck.currentLocation} /> */}
 
           <form
             onSubmit={handleSaveLocation}
@@ -325,7 +310,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setLocationForm((f) => ({ ...f, latitude: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="space-y-1.5">
@@ -338,7 +323,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setLocationForm((f) => ({ ...f, longitude: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="space-y-1.5">
@@ -350,7 +335,7 @@ export default function TruckDetailPage() {
                 onChange={(e) =>
                   setLocationForm((f) => ({ ...f, address: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="sm:col-span-3 flex justify-end pt-1">
@@ -407,5 +392,3 @@ export default function TruckDetailPage() {
     </div>
   );
 }
-
-

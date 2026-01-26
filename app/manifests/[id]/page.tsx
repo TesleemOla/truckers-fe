@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -29,7 +30,6 @@ export default function ManifestDetailPage() {
   const router = useRouter();
   const [manifest, setManifest] = useState<ManifestType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [locationSaving, setLocationSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -74,8 +74,8 @@ export default function ManifestDetailPage() {
           address: data.lastReportedLocation?.address ?? "",
         });
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load manifest.",
+        toast.error(
+          err instanceof Error ? err.message : "Failed to load manifest."
         );
       } finally {
         setLoading(false);
@@ -87,7 +87,6 @@ export default function ManifestDetailPage() {
     e.preventDefault();
     if (!manifest) return;
     setSaving(true);
-    setError(null);
     try {
       const updated = await updateManifest(manifest._id, {
         manifestNumber: form.manifestNumber,
@@ -98,10 +97,9 @@ export default function ManifestDetailPage() {
         notes: form.notes || undefined,
       });
       setManifest(updated);
+      toast.success("Manifest saved successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to save changes.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to save changes.");
     } finally {
       setSaving(false);
     }
@@ -111,7 +109,6 @@ export default function ManifestDetailPage() {
     e.preventDefault();
     if (!manifest) return;
     setLocationSaving(true);
-    setError(null);
     try {
       const updated = await updateManifestLocation(manifest._id, {
         latitude: Number(locationForm.latitude),
@@ -119,10 +116,9 @@ export default function ManifestDetailPage() {
         address: locationForm.address || undefined,
       });
       setManifest(updated);
+      toast.success("Location updated successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to update location.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to update location.");
     } finally {
       setLocationSaving(false);
     }
@@ -131,14 +127,12 @@ export default function ManifestDetailPage() {
   async function handleDeparture() {
     if (!manifest) return;
     setSaving(true);
-    setError(null);
     try {
       const updated = await recordDeparture(manifest._id);
       setManifest(updated);
+      toast.success("Departure recorded successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to record departure.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to record departure.");
     } finally {
       setSaving(false);
     }
@@ -147,14 +141,12 @@ export default function ManifestDetailPage() {
   async function handleArrival() {
     if (!manifest) return;
     setSaving(true);
-    setError(null);
     try {
       const updated = await recordArrival(manifest._id);
       setManifest(updated);
+      toast.success("Arrival recorded successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to record arrival.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to record arrival.");
     } finally {
       setSaving(false);
     }
@@ -163,14 +155,12 @@ export default function ManifestDetailPage() {
   async function handleDelete() {
     if (!manifest) return;
     setSaving(true);
-    setError(null);
     try {
       await deleteManifest(manifest._id);
+      toast.success("Manifest deleted successfully.");
       router.push("/manifests");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to delete manifest.",
-      );
+      toast.error(err instanceof Error ? err.message : "Unable to delete manifest.");
     } finally {
       setSaving(false);
     }
@@ -238,14 +228,6 @@ export default function ManifestDetailPage() {
           </button>
         </div>
       </div>
-
-      {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-950/40 px-4 py-2 text-xs text-rose-200">
-          <AlertTriangle className="h-3.5 w-3.5" />
-          {error}
-        </div>
-      )}
-
       <div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="glass-card space-y-4 px-5 py-4 sm:px-6 sm:py-5">
           <div className="flex items-center justify-between gap-3">
@@ -543,5 +525,3 @@ export default function ManifestDetailPage() {
     </div>
   );
 }
-
-

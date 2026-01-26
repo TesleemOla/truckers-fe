@@ -62,10 +62,10 @@ export default async function DashboardPage() {
               <Activity className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-300">
+              <p className="text-xs font-medium text-slate-900">
                 Operations snapshot
               </p>
-              <p className="mt-0.5 text-[11px] text-slate-400">
+              <p className="mt-0.5 text-[11px] text-slate-900">
                 {trucks.length} trucks · {manifests.length} manifests in
                 view
               </p>
