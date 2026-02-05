@@ -1,26 +1,11 @@
-import {
-  type AuthUser,
-  type Truck,
-  type Manifest,
-} from "@/lib/api";
 import { LogOut, Truck as TruckTag, Route, Activity } from "lucide-react";
-import ManifestsCard from "@/components/ManifestCard";
-import TrucksCard from "@/components/TrucksCard";
-import { serverApiFetch } from "@/lib/server-api";
+import ServerAuth from "./context/ServerSideUser";
+import DriverDashboard from "@/components/DriverDashboard";
+import { AdminDashboard } from "@/components/AdminDashboard";
 
-async function loadData() {
-  // Middleware ensures user is authenticated, so we can safely fetch data
-  const [user, trucks, manifests] = await Promise.all([
-    serverApiFetch<AuthUser>("/auth/profile"),
-    serverApiFetch<Truck[]>("/trucks"),
-    serverApiFetch<Manifest[]>("/manifests"),
-  ]);
-
-  return { user, trucks, manifests };
-}
 
 export default async function DashboardPage() {
-  const { user, trucks, manifests } = await loadData();
+  const { user, trucks, manifests } = await ServerAuth()
 
   return (
     <div className="space-y-5">
@@ -54,30 +39,14 @@ export default async function DashboardPage() {
           </button>
         </form>
       </div>
+      {
+        user?.user?.role === "admin" ? (
+          <AdminDashboard />
+        ) : (
+          <DriverDashboard user={user} trucks={trucks} manifests={manifests} />
+        )
+      }
 
-      <div className="grid grid-cols-12 gap-4 md:gap-5">
-        <section className="glass-card col-span-12 flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-900/80 text-primary-300 shadow-soft ring-1 ring-slate-800">
-              <Activity className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-900">
-                Operations snapshot
-              </p>
-              <p className="mt-0.5 text-[11px] text-slate-900">
-                {trucks.length} trucks · {manifests.length} manifests in
-                view
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <TrucksCard trucks={trucks || []} />
-        <ManifestsCard manifests={manifests || []} />
-      </div>
     </div>
   );
 }
-
-

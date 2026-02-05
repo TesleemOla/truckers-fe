@@ -12,6 +12,7 @@ import {
   updateTruckLocation,
 } from "@/lib/api";
 import { TruckLocationMap } from "@/components/maps/TruckLocationMap";
+import Loading from "@/app/components/Loading";
 
 export default function TruckDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -120,10 +121,7 @@ export default function TruckDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-xs text-slate-300">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading truck...
-      </div>
+      <Loading />
     );
   }
 

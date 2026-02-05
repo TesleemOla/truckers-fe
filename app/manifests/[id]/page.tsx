@@ -24,6 +24,7 @@ import {
   updateManifestLocation,
 } from "@/lib/api";
 import { ManifestRouteMap } from "@/components/maps/ManifestRouteMap";
+import Loading from "@/app/components/Loading";
 
 export default function ManifestDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -168,10 +169,7 @@ export default function ManifestDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-xs text-slate-300">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading manifest...
-      </div>
+      <Loading />
     );
   }
 
@@ -187,16 +185,14 @@ export default function ManifestDetailPage() {
   const truckDisplay =
     typeof manifest.truck === "string"
       ? manifest.truck
-      : `${(manifest.truck as any).truckNumber} · ${
-          (manifest.truck as any).licensePlate ?? ""
-        }`;
+      : `${(manifest.truck as any).truckNumber} · ${(manifest.truck as any).licensePlate ?? ""
+      }`;
 
   const driverDisplay =
     typeof manifest.driver === "string"
       ? manifest.driver
-      : `${(manifest.driver as any).name} · ${
-          (manifest.driver as any).email ?? ""
-        }`;
+      : `${(manifest.driver as any).name} · ${(manifest.driver as any).email ?? ""
+      }`;
 
   return (
     <div className="space-y-5">
@@ -350,8 +346,8 @@ export default function ManifestDetailPage() {
                     <span className="text-slate-200">
                       {manifest.departureTime
                         ? new Date(
-                            manifest.departureTime,
-                          ).toLocaleString()
+                          manifest.departureTime,
+                        ).toLocaleString()
                         : "Not recorded"}
                     </span>
                   </p>

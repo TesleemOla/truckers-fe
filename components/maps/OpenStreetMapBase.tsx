@@ -2,7 +2,6 @@
 
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import { Icon } from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo } from "react";
 
 type LatLng = { lat: number; lng: number };
@@ -28,13 +27,25 @@ export default function OpenStreetMapBase({
   markerLabels?: string[];
 }) {
   useEffect(() => {
-    delete (Icon.Default.prototype as any)._getIconUrl;
+    // Fix for Leaflet marker icons in Next.js/React
+    const fixLeafletIcons = async () => {
+      const L = (await import("leaflet")).default;
 
-    Icon.Default.mergeOptions({
-      iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-    });
+      // Check if the hack is already applied to avoid double-application in strict mode
+      // @ts-ignore - _getIconUrl is an internal Leaflet method
+      if (!L.Icon.Default.prototype._getIconUrl) return;
+
+      // @ts-ignore
+      delete L.Icon.Default.prototype._getIconUrl;
+
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      });
+    };
+
+    fixLeafletIcons();
   }, []);
 
   const mapKey = useMemo(

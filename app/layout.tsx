@@ -26,7 +26,7 @@ export default function RootLayout({
             <Link href="/" className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-slate-200">
                 <span className="text-lg font-semibold tracking-tight text-primary-600">
-                  T
+                  TR
                 </span>
               </div>
               <div>

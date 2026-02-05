@@ -1,8 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { login as apiLogin, logout as apiLogout, getProfile, type AuthUser } from "@/lib/api";
+import { toast } from "sonner";
+import Loading from "../components/Loading";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -20,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const checkAuth = async () => {
     try {
@@ -42,9 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const response = await apiLogin(email, password);
       setUser(response.user);
+      toast.success("Login successful!");
       router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message);
+      toast.error(message);
       throw err;
     } finally {
       setLoading(false);
@@ -57,10 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       await apiLogout();
       setUser(null);
+      toast.success("You have been logged out.");
       router.push("/login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Logout failed");
-      // Still clear user state and redirect even if API call fails
+      const message = err instanceof Error ? err.message : "Logout failed";
+      setError(message);
+      toast.error(message);
       setUser(null);
       router.push("/login");
     } finally {
@@ -69,10 +77,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if(location.pathname !== "/login"){
-    checkAuth();
+    if (pathname !== "/login" && pathname !== "/register") {
+      checkAuth();
+    } else {
+      setLoading(false);
     }
-  }, []);
+  }, [pathname]);
 
   const value: AuthContextType = {
     user,
@@ -82,6 +92,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     checkAuth,
   };
+
+  if (loading) {
+    return (
+      <Loading />
+    );
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
