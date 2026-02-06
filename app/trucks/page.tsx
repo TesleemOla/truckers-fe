@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Activity, Plus, Truck } from "lucide-react";
 import { getTrucks, type Truck as TruckType } from "@/lib/api";
+import { isBackendError } from "@/lib/error";
 
 export default function TrucksPage() {
   const [trucks, setTrucks] = useState<TruckType[]>([]);
@@ -17,9 +18,9 @@ export default function TrucksPage() {
         const data = await getTrucks();
         setTrucks(data);
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to load trucks."
-        );
+        if (isBackendError(err)) {
+          toast.error(err.message);
+        }
       } finally {
         setLoading(false);
       }

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { login as apiLogin, logout as apiLogout, getProfile, type AuthUser } from "@/lib/api";
 import { toast } from "sonner";
 import Loading from "../components/Loading";
+import { isBackendError } from "@/lib/error";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -32,7 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
     } catch (err) {
       setUser(null);
-      setError(err instanceof Error ? err.message : "Not Authenticated. Please log in.");
+      if (isBackendError(err)) {
+        toast.error(err.message || "Not authenticated. Please login");
+      }
       router.push("/login");
     } finally {
       setLoading(false);
@@ -48,10 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success("Login successful!");
       router.push("/");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Login failed";
-      setError(message);
-      toast.error(message);
-      throw err;
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setLoading(false);
     }

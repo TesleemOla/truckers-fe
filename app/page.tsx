@@ -5,7 +5,7 @@ import { AdminDashboard } from "@/components/AdminDashboard";
 
 
 export default async function DashboardPage() {
-  const { user, trucks, manifests } = await ServerAuth()
+  const { user, trucks } = await ServerAuth()
 
   return (
     <div className="space-y-5">
@@ -43,7 +43,7 @@ export default async function DashboardPage() {
         user?.user?.role === "admin" ? (
           <AdminDashboard />
         ) : (
-          <DriverDashboard user={user} trucks={trucks} manifests={manifests} />
+          <DriverDashboard user={user} trucks={trucks} />
         )
       }
 

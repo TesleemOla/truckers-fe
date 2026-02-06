@@ -39,7 +39,7 @@ export async function apiFetch<T>(
     } catch {
       // ignore
     }
-    
+
     throw new ApiError(message, res.status, data);
   }
 
@@ -223,6 +223,7 @@ export async function createManifest(body: {
   return apiFetch<Manifest>("/manifests", {
     method: "POST",
     body: JSON.stringify(body),
+    credentials: "include"
   });
 }
 

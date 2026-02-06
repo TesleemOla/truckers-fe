@@ -1,7 +1,7 @@
 import { Route } from "lucide-react";
 import StatusPill from "./StatusPill";
 import { Manifest } from "@/lib/api";
-import CustomButton from "@/app/components/Button";
+
 import Link from "next/link";
 
 function ManifestsCard({ manifests }: { manifests: Manifest[] }) {
@@ -31,9 +31,12 @@ function ManifestsCard({ manifests }: { manifests: Manifest[] }) {
           </p>
           <p className="text-[11px] text-slate-600">In transit</p>
         </div>
-        <CustomButton title="View Manifests" className="ml-3 px-2 py-1 text-xs">
-            <Link href="/manifests">View All</Link>
-          </CustomButton>
+        <Link
+          href="/manifests"
+          className="ml-3 rounded-xl bg-primary-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-primary-700"
+        >
+          View All
+        </Link>
       </div>
 
       <div className="mt-2 space-y-2">
@@ -44,7 +47,7 @@ function ManifestsCard({ manifests }: { manifests: Manifest[] }) {
           >
             <div className="min-w-0">
               <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-slate-700">
-                { "Manifest"}
+                {"Manifest"}
               </p>
               <p className="mt-0.5 text-[11px] text-slate-600">
                 {/* {m.origin} → {m.destination} */}

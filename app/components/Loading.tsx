@@ -75,7 +75,7 @@ export default function Loading() {
             </div>
 
             <div className="flex items-center gap-1">
-                <span className="text-sm font-medium text-slate-500">Loading Data</span>
+                <span className="text-sm font-medium text-primary-500 delay-100 animate-bounce">Please Wait</span>
                 <span className="animate-bounce text-sm text-primary-500">.</span>
                 <span className="animate-bounce text-sm text-primary-500 delay-100">.</span>
                 <span className="animate-bounce text-sm text-primary-500 delay-200">.</span>

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Truck } from "lucide-react";
 import { createTruck } from "@/lib/api";
+import { isBackendError } from "@/lib/error";
+import { toast } from "sonner";
 
 export default function NewTruckPage() {
   const router = useRouter();
@@ -31,9 +33,9 @@ export default function NewTruckPage() {
       });
       router.push(`/trucks/${created._id}`);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to create truck.",
-      );
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setLoading(false);
     }

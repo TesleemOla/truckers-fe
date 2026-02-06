@@ -5,14 +5,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { FileText, Loader2, MapPin } from "lucide-react";
 import { createManifest, getTrucks, getUsersByRole, Truck } from "@/lib/api";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { useAuth } from "@/app/context/AuthContext";
+import { isBackendError } from "@/lib/error";
 
 export default function NewManifestPage() {
   const router = useRouter();
   const [manifestNumber, setManifestNumber] = useState("");
-  const [ allTrucks, setAllTrucks ] = useState<Array<Truck>>([]);
+  const [allTrucks, setAllTrucks] = useState<Array<Truck>>([]);
   const [truck, setTruck] = useState("");
   const [driver, setDriver] = useState("");
-  const [allDrivers, setAllDrivers] = useState<Array<{_id: string; name: string; email: string; role: string}>>([]);
+  const [allDrivers, setAllDrivers] = useState<Array<{ _id: string; name: string; email: string; role: string }>>([]);
   const [origin, setOrigin] = useState({
     address: "",
     latitude: "",
@@ -26,50 +29,40 @@ export default function NewManifestPage() {
   const [cargoDescription, setCargoDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
-  useEffect(()=>{
+  // Check if user has permission to create manifests
+  useEffect(() => {
+    if (user && user.user.role !== "admin" && user.user.role !== "dispatcher") {
+      toast.error("You don't have permission to create manifests. Only admins and dispatchers can perform this action.");
+      router.push("/");
+    }
+  }, [user, router]);
+
+  useEffect(() => {
     document.title = "New Manifest - Truckers App";
-    getTrucks().then((data)=>{
-    setAllTrucks(data);
-    }).catch((err)=>{
-      toast.error(err instanceof Error ? err.message : "Failed to fetch trucks.");
+    getTrucks().then((data) => {
+      setAllTrucks(data);
+    }).catch((err) => {
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     });
 
-    getUsersByRole('driver').then((data)=>{
+    getUsersByRole('driver').then((data) => {
       setAllDrivers(data);
-    }).catch((err)=>{
-      toast.error(err instanceof Error ? err.message : "Failed to fetch drivers.");
+    }).catch((err) => {
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     });
-    
-    return ()=>{
-      // Cleanup if needed
-      }
-  },[])
 
-  async function handleGeocodeOrigin(stater: 'origin' | 'destination' = 'origin') {
-    const address = stater === 'origin' ? origin.address : destination.address;
-    if (!address) {
-      toast.info("Please enter an address to geocode.");
-      return;
+    return () => {
+      // Cleanup if needed
     }
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          address
-        )}`
-      );
-      const data = await res.json();
-      if (data && data[0]) {
-        stater === 'origin' ? setOrigin((o) => ({ ...o, latitude: data[0].lat, longitude: data[0].lon })):
-        setDestination((d) => ({ ...d, latitude: data[0].lat, longitude: data[0].lon }));
-        toast.success("Coordinates found for address.");
-      } else {
-        toast.error("Could not find coordinates for the address.");
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Geocoding failed.");
-    }
-  }
+  }, [])
+
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -93,11 +86,11 @@ export default function NewManifestPage() {
         notes: notes || undefined,
       });
       toast.success("Manifest created successfully.");
-      router.push(`/manifests/${created._id}`);
+      router.push(`/manifests`);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Unable to create manifest.",
-      );
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -148,7 +141,7 @@ export default function NewManifestPage() {
               <option value="">Select a truck</option>
               {allTrucks.map((t) => (
                 <option key={t._id} value={t._id}>
-                  {t.truckNumber } - {t.licensePlate}
+                  {t.truckNumber} - {t.licensePlate}
                 </option>
               ))}
             </select>
@@ -191,57 +184,45 @@ export default function NewManifestPage() {
           <div className="space-y-2">
             <p className="text-xs font-semibold text-slate-800">Origin</p>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-slate-700">
-                Address
-              </label>
-              <input
+              <AddressAutocomplete
+                label="Address"
                 required
                 value={origin.address}
-                onChange={(e) =>
-                  setOrigin((o) => ({ ...o, address: e.target.value }))
-                }
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                onChange={(val) => setOrigin(o => ({ ...o, address: val }))}
+                onSelect={(data) => setOrigin(o => ({ ...o, address: data.address, latitude: data.lat, longitude: data.lon }))}
               />
-              <button
-                type="button"
-                onClick={()=>handleGeocodeOrigin('origin')}
-                className="mb-[1px] inline-flex h-[38px] w-[38px] items-center justify-center rounded-xl border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                title="Get coordinates from address"
-              >
-                <MapPin className="h-4 w-4" />
-            </button>
             </div>
-            
+
             <div className="flex items-end gap-2">
               <div className="grid flex-1 gap-2 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-700">
-                  Latitude
-                </label>
-                <input
-                  required
-                  value={origin.latitude}
-                  onChange={(e) =>
-                    setOrigin((o) => ({ ...o, latitude: e.target.value }))
-                  }
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                />
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-slate-700">
+                    Latitude
+                  </label>
+                  <input
+                    required
+                    value={origin.latitude}
+                    onChange={(e) =>
+                      setOrigin((o) => ({ ...o, latitude: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-slate-700">
+                    Longitude
+                  </label>
+                  <input
+                    required
+                    value={origin.longitude}
+                    onChange={(e) =>
+                      setOrigin((o) => ({ ...o, longitude: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-700">
-                  Longitude
-                </label>
-                <input
-                  required
-                  value={origin.longitude}
-                  onChange={(e) =>
-                    setOrigin((o) => ({ ...o, longitude: e.target.value }))
-                  }
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                />
-              </div>
-              </div>
-              
+
             </div>
           </div>
 
@@ -250,27 +231,15 @@ export default function NewManifestPage() {
               Destination
             </p>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-slate-700">
-                Address
-              </label>
-              <input
+              <AddressAutocomplete
+                label="Address"
                 required
                 value={destination.address}
-                onChange={(e) =>
-                  setDestination((d) => ({ ...d, address: e.target.value }))
-                }
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                onChange={(val) => setDestination(d => ({ ...d, address: val }))}
+                onSelect={(data) => setDestination(d => ({ ...d, address: data.address, latitude: data.lat, longitude: data.lon }))}
               />
-              <button
-                type="button"
-                onClick={()=>handleGeocodeOrigin('destination')}
-                className="mb-[1px] inline-flex h-[38px] w-[38px] items-center justify-center rounded-xl border border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                title="Get coordinates from address"
-              >
-                <MapPin className="h-4 w-4" />
-              </button>
             </div>
-            
+
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-medium text-slate-700">
@@ -304,7 +273,7 @@ export default function NewManifestPage() {
                   className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
-              
+
             </div>
           </div>
         </div>

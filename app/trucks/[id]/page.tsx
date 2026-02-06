@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import { TruckLocationMap } from "@/components/maps/TruckLocationMap";
 import Loading from "@/app/components/Loading";
+import { isBackendError } from "@/lib/error";
 
 export default function TruckDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -57,7 +58,9 @@ export default function TruckDetailPage() {
           address: data.currentLocation?.address ?? "",
         });
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Failed to load truck.");
+        if (isBackendError(err)) {
+          toast.error(err.message);
+        }
       } finally {
         setLoading(false);
       }
@@ -80,7 +83,9 @@ export default function TruckDetailPage() {
       setTruck(updated);
       toast.success("Truck details saved successfully.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to save changes.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setSaving(false);
     }
@@ -99,7 +104,9 @@ export default function TruckDetailPage() {
       setTruck(updated);
       toast.success("Truck location updated successfully.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to update location.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setLocationSaving(false);
     }
@@ -113,7 +120,9 @@ export default function TruckDetailPage() {
       toast.success("Truck deleted successfully.");
       router.push("/trucks");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to delete truck.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setSaving(false);
     }

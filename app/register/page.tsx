@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, Loader2 } from "lucide-react";
 import { registerUser } from "@/lib/api";
+import { isBackendError } from "@/lib/error";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,9 +24,9 @@ export default function RegisterPage() {
       await registerUser({ name, email, password, role });
       router.push("/");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to register. Please try again.",
-      );
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -67,22 +69,20 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setRole("manager")}
-                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
-                  role === "manager"
-                    ? "border-primary-500 bg-primary-50 text-primary-700"
-                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-                }`}
+                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${role === "manager"
+                  ? "border-primary-500 bg-primary-50 text-primary-700"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                  }`}
               >
                 Dispatcher / Manager
               </button>
               <button
                 type="button"
                 onClick={() => setRole("driver")}
-                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
-                  role === "driver"
-                    ? "border-primary-500 bg-primary-50 text-primary-700"
-                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-                }`}
+                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${role === "driver"
+                  ? "border-primary-500 bg-primary-50 text-primary-700"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                  }`}
               >
                 Driver
               </button>

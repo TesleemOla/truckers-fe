@@ -4,6 +4,8 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LogIn, Loader2 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { isBackendError } from "@/lib/error";
+import { toast } from "sonner";
 
 export default function Login() {
   const router = useRouter();
@@ -27,14 +29,16 @@ export default function Login() {
       // Redirect to the intended page or dashboard
       router.push(redirectTo as any);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    
+
     <div className="mx-auto flex max-w-md flex-col gap-6">
       <div className="glass-card px-6 py-6 sm:px-8 sm:py-7">
         <div className="mb-5 flex items-center justify-between gap-3">

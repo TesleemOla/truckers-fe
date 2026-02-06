@@ -1,7 +1,7 @@
 import type { Truck } from "@/lib/api";
 import { Truck as TruckTag } from "lucide-react";
 import StatusPill from "./StatusPill";
-import CustomButton from "@/app/components/Button";
+
 import Link from "next/link";
 
 function TrucksCard({ trucks }: { trucks: Truck[] }) {
@@ -20,9 +20,12 @@ function TrucksCard({ trucks }: { trucks: Truck[] }) {
               Live view of your fleet
             </p>
           </div>
-          <CustomButton title="View Trucks" className="ml-3 px-2 py-1 text-xs">
-            <Link href="/trucks">View All</Link>
-          </CustomButton>
+          <Link
+            href="/trucks"
+            className="ml-3 rounded-xl bg-primary-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-primary-700"
+          >
+            View All
+          </Link>
         </div>
         <div className="text-right">
           <p className="text-lg font-semibold text-slate-900">

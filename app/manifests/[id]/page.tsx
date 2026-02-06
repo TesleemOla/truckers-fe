@@ -25,6 +25,7 @@ import {
 } from "@/lib/api";
 import { ManifestRouteMap } from "@/components/maps/ManifestRouteMap";
 import Loading from "@/app/components/Loading";
+import { isBackendError } from "@/lib/error";
 
 export default function ManifestDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -75,9 +76,9 @@ export default function ManifestDetailPage() {
           address: data.lastReportedLocation?.address ?? "",
         });
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to load manifest."
-        );
+        if (isBackendError(err)) {
+          toast.error(err.message);
+        }
       } finally {
         setLoading(false);
       }
@@ -100,7 +101,9 @@ export default function ManifestDetailPage() {
       setManifest(updated);
       toast.success("Manifest saved successfully.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to save changes.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setSaving(false);
     }
@@ -119,7 +122,9 @@ export default function ManifestDetailPage() {
       setManifest(updated);
       toast.success("Location updated successfully.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to update location.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setLocationSaving(false);
     }
@@ -133,7 +138,9 @@ export default function ManifestDetailPage() {
       setManifest(updated);
       toast.success("Departure recorded successfully.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to record departure.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setSaving(false);
     }
@@ -147,7 +154,9 @@ export default function ManifestDetailPage() {
       setManifest(updated);
       toast.success("Arrival recorded successfully.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to record arrival.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setSaving(false);
     }
@@ -161,7 +170,9 @@ export default function ManifestDetailPage() {
       toast.success("Manifest deleted successfully.");
       router.push("/manifests");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to delete manifest.");
+      if (isBackendError(err)) {
+        toast.error(err.message);
+      }
     } finally {
       setSaving(false);
     }
@@ -191,8 +202,7 @@ export default function ManifestDetailPage() {
   const driverDisplay =
     typeof manifest.driver === "string"
       ? manifest.driver
-      : `${(manifest.driver as any).name} · ${(manifest.driver as any).email ?? ""
-      }`;
+      : `${(manifest.driver as any).name}`
 
   return (
     <div className="space-y-5">
@@ -202,10 +212,10 @@ export default function ManifestDetailPage() {
             <FileText className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-slate-50">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
               Manifest {manifest.manifestNumber}
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600">
               {manifest.origin.address} → {manifest.destination.address}
             </p>
           </div>
@@ -232,10 +242,10 @@ export default function ManifestDetailPage() {
                 <Truck className="h-3.5 w-3.5" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-slate-100">
+                <h3 className="text-sm font-semibold text-slate-900">
                   Assignment
                 </h3>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-600">
                   Truck and driver for this route.
                 </p>
               </div>
@@ -245,7 +255,7 @@ export default function ManifestDetailPage() {
           <form onSubmit={handleSave} className="space-y-3 pt-1">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-700">
                   Manifest number
                 </label>
                 <input
@@ -254,11 +264,11 @@ export default function ManifestDetailPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, manifestNumber: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-700">
                   Status
                 </label>
                 <select
@@ -266,7 +276,7 @@ export default function ManifestDetailPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, status: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="pending">Pending</option>
                   <option value="in-transit">In transit</option>
@@ -278,37 +288,37 @@ export default function ManifestDetailPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-700">
                   Truck ID
                 </label>
                 <input
                   required
-                  value={form.truck}
+                  value={truckDisplay}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, truck: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-[11px] text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-[11px] text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
-                <p className="text-[11px] text-slate-500">{truckDisplay}</p>
+
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-700">
                   Driver ID
                 </label>
                 <input
                   required
-                  value={form.driver}
+                  value={driverDisplay}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, driver: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-[11px] text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-[11px] text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
-                <p className="text-[11px] text-slate-500">{driverDisplay}</p>
+
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300">
+              <label className="text-xs font-medium text-slate-700">
                 Cargo description
               </label>
               <input
@@ -319,12 +329,12 @@ export default function ManifestDetailPage() {
                     cargoDescription: e.target.value,
                   }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300">
+              <label className="text-xs font-medium text-slate-700">
                 Notes
               </label>
               <textarea
@@ -333,7 +343,7 @@ export default function ManifestDetailPage() {
                   setForm((f) => ({ ...f, notes: e.target.value }))
                 }
                 rows={3}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
 
@@ -409,10 +419,10 @@ export default function ManifestDetailPage() {
                 <MapPin className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-slate-100">
+                <h3 className="text-sm font-semibold text-slate-900">
                   Route &amp; live position
                 </h3>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-600">
                   Visualize origin, destination, and last reported location.
                 </p>
               </div>
@@ -430,7 +440,7 @@ export default function ManifestDetailPage() {
             className="mt-3 grid gap-3 sm:grid-cols-3"
           >
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300">
+              <label className="text-xs font-medium text-slate-700">
                 Latitude
               </label>
               <input
@@ -439,11 +449,11 @@ export default function ManifestDetailPage() {
                 onChange={(e) =>
                   setLocationForm((f) => ({ ...f, latitude: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300">
+              <label className="text-xs font-medium text-slate-700">
                 Longitude
               </label>
               <input
@@ -452,11 +462,11 @@ export default function ManifestDetailPage() {
                 onChange={(e) =>
                   setLocationForm((f) => ({ ...f, longitude: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300">
+              <label className="text-xs font-medium text-slate-700">
                 Address (optional)
               </label>
               <input
@@ -464,7 +474,7 @@ export default function ManifestDetailPage() {
                 onChange={(e) =>
                   setLocationForm((f) => ({ ...f, address: e.target.value }))
                 }
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/40"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
             <div className="sm:col-span-3 flex justify-end pt-1">
