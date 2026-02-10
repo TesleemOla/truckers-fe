@@ -16,6 +16,7 @@ import { MapPin, Navigation, Truck as TruckIcon, CheckCircle, Clock } from "luci
 import { toast } from "sonner";
 import { ManifestRouteMap } from "./maps/ManifestRouteMap";
 import { isBackendError } from "@/lib/error";
+import { socket } from "@/lib/socket";
 
 
 interface DriverDashboardProps {
@@ -33,7 +34,6 @@ export default function DriverDashboard({ user, trucks }: DriverDashboardProps) 
     async function fetchManifests() {
       try {
         const data = await getManifests()
-        console.log(data)
         setManifests(data);
       } catch (error) {
         if (isBackendError(error)) {
@@ -50,7 +50,19 @@ export default function DriverDashboard({ user, trucks }: DriverDashboardProps) 
     setActiveManifest(currentManifest);
     const currentTruck = trucks.find((t) => t.assignedDriver?._id === user.user._id);
     setMyTruck(currentTruck);
-  }, [manifests])
+
+    if (currentManifest) {
+      socket.connect();
+      socket.emit('joinManifest', currentManifest._id);
+      socket.on('locationUpdated', (data: any) => {
+        console.log('Received live update:', data);
+      });
+
+      return () => {
+        socket.off('locationUpdated');
+      };
+    }
+  }, [manifests, user.user._id, trucks])
 
   console.log(activeManifest)
   const [loading, setLoading] = useState(false);
@@ -87,6 +99,39 @@ export default function DriverDashboard({ user, trucks }: DriverDashboardProps) 
       }
     );
   };
+
+  const [currentAddress, setCurrentAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function reverseGeocode() {
+      if (!myTruck?.currentLocation?.latitude || !myTruck?.currentLocation?.longitude) {
+        setCurrentAddress(null);
+        return;
+      }
+
+      if (myTruck.currentLocation.address) {
+        setCurrentAddress(myTruck.currentLocation.address);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lon=${myTruck.currentLocation.longitude}&lat=${myTruck.currentLocation.latitude}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentAddress(data.display_name || `${myTruck.currentLocation.latitude}, ${myTruck.currentLocation.longitude}`);
+        } else {
+          setCurrentAddress(`${myTruck.currentLocation.latitude}, ${myTruck.currentLocation.longitude}`);
+        }
+      } catch (error) {
+        console.error("Reverse geocoding error:", error);
+        setCurrentAddress(`${myTruck.currentLocation.latitude}, ${myTruck.currentLocation.longitude}`);
+      }
+    }
+
+    reverseGeocode();
+  }, [myTruck?.currentLocation?.latitude, myTruck?.currentLocation?.longitude, myTruck?.currentLocation?.address]);
 
   const handleStatusChange = async (action: 'start' | 'complete') => {
     if (!activeManifest) return;
@@ -146,6 +191,7 @@ export default function DriverDashboard({ user, trucks }: DriverDashboardProps) 
 
             <div className="p-0">
               <ManifestRouteMap
+                manifestId={activeManifest._id}
                 origin={activeManifest.origin}
                 destination={activeManifest.destination}
                 lastReportedLocation={activeManifest.lastReportedLocation}
@@ -224,7 +270,7 @@ export default function DriverDashboard({ user, trucks }: DriverDashboardProps) 
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Last Reported Location</p>
                   <p className="mt-1 text-sm font-medium text-slate-900">
-                    {myTruck.currentLocation?.address || "No location data available"}
+                    {currentAddress || (myTruck.currentLocation?.latitude ? `${myTruck.currentLocation.latitude}, ${myTruck.currentLocation.longitude}` : "No location data")}
                   </p>
                   {myTruck.currentLocation?.lastUpdated && (
                     <p className="mt-1 text-[10px] text-slate-400" suppressHydrationWarning>

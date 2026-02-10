@@ -22,7 +22,9 @@ export default async function DashboardPage() {
             <span className="font-medium text-slate-800">
               {user?.user?.role}
             </span>
-            . Monitor trucks, manifests, and drivers in one place.
+            {user?.user?.role === "admin" ?
+              ".  " + "Monitor trucks, manifests, and drivers in one place." :
+              ".  " + "Your location details and Manifest details are updated in real-time."}
           </p>
         </div>
         <form
@@ -32,7 +34,7 @@ export default async function DashboardPage() {
         >
           <button
             type="submit"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs"
+            className="p-4 inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-red-600 text-white text-xs"
           >
             <LogOut className="h-3.5 w-3.5" />
             Sign out

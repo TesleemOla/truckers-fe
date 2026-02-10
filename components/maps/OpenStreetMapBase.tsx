@@ -1,8 +1,8 @@
 "use client";
 
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
-import { Icon } from "leaflet";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import "leaflet/dist/leaflet.css";
 
 type LatLng = { lat: number; lng: number };
 
@@ -12,6 +12,14 @@ const containerStyle: React.CSSProperties = {
   borderRadius: "0.75rem",
   overflow: "hidden",
 };
+
+// SVG Marker Template
+const markerSvg = `
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 21.7C17.3 17 20 13 20 8.8C20 4.5 16.4 1 12 1C7.6 1 4 4.5 4 8.8C4 13 6.7 17 12 21.7Z" fill="#2563eb" stroke="white" stroke-width="1.5"/>
+  <circle cx="12" cy="8.8" r="3" fill="white"/>
+</svg>
+`;
 
 export default function OpenStreetMapBase({
   center,
@@ -26,26 +34,25 @@ export default function OpenStreetMapBase({
   polyline?: LatLng[];
   markerLabels?: string[];
 }) {
+  const [customIcon, setCustomIcon] = useState<any>(null);
+
   useEffect(() => {
-    // Fix for Leaflet marker icons in Next.js/React
-    const fixLeafletIcons = async () => {
+    // Initialize Leaflet icon only on client side
+    const initLeaflet = async () => {
       const L = (await import("leaflet")).default;
 
-      // Check if the hack is already applied to avoid double-application in strict mode
-      // @ts-ignore - _getIconUrl is an internal Leaflet method
-      if (!L.Icon.Default.prototype._getIconUrl) return;
-
-      // @ts-ignore
-      delete L.Icon.Default.prototype._getIconUrl;
-
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      const icon = new L.Icon({
+        iconUrl: `data:image/svg+xml;base64,${btoa(markerSvg)}`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 29],
+        popupAnchor: [0, -29],
+        className: "custom-leaflet-icon"
       });
+
+      setCustomIcon(icon);
     };
 
-    fixLeafletIcons();
+    initLeaflet();
   }, []);
 
   const mapKey = useMemo(
@@ -66,8 +73,12 @@ export default function OpenStreetMapBase({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {markers.map((marker, index) => (
-        <Marker key={index} position={[marker.lat, marker.lng]}>
+      {customIcon && markers.map((marker, index) => (
+        <Marker
+          key={index}
+          position={[marker.lat, marker.lng]}
+          icon={customIcon}
+        >
           {markerLabels[index] && <Popup>{markerLabels[index]}</Popup>}
         </Marker>
       ))}
@@ -75,9 +86,9 @@ export default function OpenStreetMapBase({
       {polyline && polyline.length > 1 && (
         <Polyline
           positions={polyline.map(p => [p.lat, p.lng])}
-          color="blue"
-          weight={3}
-          opacity={0.7}
+          color="#2563eb"
+          weight={4}
+          opacity={0.8}
         />
       )}
     </MapContainer>

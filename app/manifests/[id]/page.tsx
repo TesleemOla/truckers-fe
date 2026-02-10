@@ -430,6 +430,7 @@ export default function ManifestDetailPage() {
           </div>
 
           <ManifestRouteMap
+            manifestId={manifest._id}
             origin={manifest.origin}
             destination={manifest.destination}
             lastReportedLocation={manifest.lastReportedLocation}
