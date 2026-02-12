@@ -10,7 +10,7 @@ import { toast } from "sonner";
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"manager" | "driver">("manager");
+  const [role, setRole] = useState<"admin" | "driver" | "dispatcher">("driver");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,13 +68,23 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setRole("manager")}
-                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${role === "manager"
+                onClick={() => setRole("admin")}
+                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${role === "dispatcher"
                   ? "border-primary-500 bg-primary-50 text-primary-700"
                   : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                   }`}
               >
-                Dispatcher / Manager
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("dispatcher")}
+                className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${role === "admin"
+                  ? "border-primary-500 bg-primary-50 text-primary-700"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                  }`}
+              >
+                Dispatcher
               </button>
               <button
                 type="button"

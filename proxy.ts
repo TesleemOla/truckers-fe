@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 const publicRoutes = ['/login', '/register'];
 
 // Define API routes that should be handled by the API itself
-const apiRoutes = ['/api'];
+const apiRoutes = ['/'];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

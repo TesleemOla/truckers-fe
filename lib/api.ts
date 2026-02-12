@@ -39,7 +39,6 @@ export async function apiFetch<T>(
     } catch {
       // ignore
     }
-
     throw new ApiError(message, res.status, data);
   }
 
