@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LogIn, Loader2 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
@@ -16,6 +16,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const errorQuery = searchParams.get("error");
+    if (errorQuery === "unauthorized") {
+      toast.error("Please sign in to access this page", {
+        id: "unauthorized-toast",
+      });
+    }
+  }, [searchParams]);
+
   // Get the redirect URL from query parameters
   const redirectTo = searchParams.get('redirect') || '/';
 
@@ -26,7 +35,6 @@ export default function Login() {
 
     try {
       await login(email, password);
-      // Redirect to the intended page or dashboard
       router.push(redirectTo as any);
     } catch (err) {
       if (isBackendError(err)) {
