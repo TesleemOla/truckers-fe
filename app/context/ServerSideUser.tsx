@@ -3,18 +3,24 @@ import { serverApiFetch } from "@/lib/server-api";
 
 export default async function ServerAuth() {
   try {
-    // Fetch everything in parallel to avoid waterfalls
-    const [userResponse, allTrucks, allManifests] = await Promise.all([
-      serverApiFetch<any>("/auth/profile").catch(() => null),
+    // 1. Fetch user profile first. This is the source of truth for auth.
+    const user = await serverApiFetch<any>("/auth/profile").catch(() => null);
+
+    // 2. If no user, return immediately. No need to fetch trucks/manifests.
+    if (!user || !user.user) {
+      return { user: null, trucks: [], manifests: [] };
+    }
+
+    // 3. Now fetch data relevant to the authenticated user in parallel
+    const [allTrucks, allManifests] = await Promise.all([
       serverApiFetch<Truck[]>("/trucks").catch(() => []),
       serverApiFetch<Manifest[]>("/manifests").catch(() => [])
     ]);
 
-    const user = userResponse;
     const trucks = Array.isArray(allTrucks) ? allTrucks : [];
     const manifests = Array.isArray(allManifests) ? allManifests : [];
 
-    // Extract inner user info if it's wrapped
+    // Extract roles and filter accordingly
     const role = user?.user?.role || user?.role;
     const userId = user?.user?._id || user?._id;
 

@@ -11,7 +11,12 @@ import {
   updateTruck,
   updateTruckLocation,
 } from "@/lib/api";
-import { TruckLocationMap } from "@/components/maps/TruckLocationMap";
+import dynamic from "next/dynamic";
+
+const TruckLocationMap = dynamic(() => import("@/components/maps/TruckLocationMap").then(mod => mod.TruckLocationMap), {
+  ssr: false,
+  loading: () => <div className="h-[260px] animate-pulse rounded-xl bg-slate-100" />
+});
 import Loading from "@/app/components/Loading";
 import { isBackendError } from "@/lib/error";
 

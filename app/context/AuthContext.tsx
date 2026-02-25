@@ -33,10 +33,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
     } catch (err) {
       setUser(null);
-      if (isBackendError(err)) {
-        toast.error(err.message || "Not authenticated. Please login");
+      // Only redirect if NOT on the home page or landing page
+      if (pathname !== "/" && pathname !== "/login" && pathname !== "/register") {
+        if (isBackendError(err)) {
+          toast.error(err.message || "Not authenticated. Please login");
+        }
+        router.push("/login");
       }
-      router.push("/login");
     } finally {
       setLoading(false);
     }
@@ -79,6 +82,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // We only want to auto-redirect from dashboard/protected routes
+    // For now, let's just avoid routing on login and register
     if (pathname !== "/login" && pathname !== "/register") {
       checkAuth();
     } else {
@@ -95,10 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth,
   };
 
-  if (loading) {
-    return (
-      <Loading />
-    );
+  // Don't block the home page with a loading state, this ensures better LCP
+  if (loading && pathname !== "/") {
+    return <Loading />;
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,7 +2,7 @@ import { Activity } from 'lucide-react'
 import React from 'react'
 import TrucksCard from './TrucksCard'
 import ManifestsCard from './ManifestCard'
-import { serverApiFetch } from '@/lib/server-api'
+import { apiFetch } from '@/lib/api'
 import { AuthUser, Manifest, Truck } from '@/lib/api'
 
 
@@ -11,9 +11,9 @@ export async function AdminDashboard() {
   async function loadData() {
 
     const [user, allTrucks, allManifests] = await Promise.all([
-      serverApiFetch<AuthUser>("/auth/profile"),
-      serverApiFetch<Truck[]>("/trucks"),
-      serverApiFetch<Manifest[]>("/manifests"),
+      apiFetch<AuthUser>("/auth/profile"),
+      apiFetch<Truck[]>("/trucks"),
+      apiFetch<Manifest[]>("/manifests"),
     ]);
 
     if (user?.user?.role === "driver") {

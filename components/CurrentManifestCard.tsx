@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { Manifest, recordArrival, recordDeparture } from "@/lib/api";
-import { ManifestRouteMap } from "./maps/ManifestRouteMap";
+import dynamic from "next/dynamic";
+const ManifestRouteMap = dynamic(() => import("./maps/ManifestRouteMap").then(mod => mod.ManifestRouteMap), { ssr: false });
 import { CheckCircle, Clock, Navigation } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -62,8 +63,8 @@ export default function CurrentManifestCard({
                     </div>
                     <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${manifest.status.toLowerCase() === "in-transit"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-slate-100 text-slate-800"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-slate-100 text-slate-800"
                             }`}
                     >
                         {manifest.status.replace("-", " ")}

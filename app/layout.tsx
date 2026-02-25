@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-white text-slate-900">
+      <body className="min-h-screen bg-white text-slate-900 overflow-x-hidden">
         <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
           <div className="pointer-events-none absolute inset-0 -z-10 opacity-30">
             <div className="absolute -left-24 top-10 h-56 w-56 rounded-full bg-primary-100 blur-3xl" />

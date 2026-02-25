@@ -23,7 +23,12 @@ import {
   updateManifest,
   updateManifestLocation,
 } from "@/lib/api";
-import { ManifestRouteMap } from "@/components/maps/ManifestRouteMap";
+import dynamic from "next/dynamic";
+
+const ManifestRouteMap = dynamic(() => import("@/components/maps/ManifestRouteMap").then(mod => mod.ManifestRouteMap), {
+  ssr: false,
+  loading: () => <div className="h-[260px] animate-pulse rounded-xl bg-slate-100" />
+});
 import Loading from "@/app/components/Loading";
 import { isBackendError } from "@/lib/error";
 

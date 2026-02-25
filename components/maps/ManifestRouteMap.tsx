@@ -1,12 +1,9 @@
-"use client";
-
-import OpenStreetMapBase from "./OpenStreetMapBase";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { socket } from "@/lib/socket";
 
 const DynamicOpenStreetMapBase = dynamic(
-  () => Promise.resolve(OpenStreetMapBase),
+  () => import("./OpenStreetMapBase"),
   { ssr: false }
 );
 
