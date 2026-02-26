@@ -1,40 +1,83 @@
-import { Activity } from 'lucide-react'
-import React from 'react'
+"use client"
+
+import { Activity, Loader2 } from 'lucide-react'
+import React, { useEffect, useState, useCallback } from 'react'
 import TrucksCard from './TrucksCard'
 import ManifestsCard from './ManifestCard'
 import { apiFetch } from '@/lib/api'
 import { AuthUser, Manifest, Truck } from '@/lib/api'
 
+export function AdminDashboard() {
+  const [trucks, setTrucks] = useState<Truck[]>([])
+  const [manifests, setManifests] = useState<Manifest[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-export async function AdminDashboard() {
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const [user, allTrucks, allManifests] = await Promise.all([
+        apiFetch<AuthUser>("/auth/profile"),
+        apiFetch<Truck[]>("/trucks"),
+        apiFetch<Manifest[]>("/manifests"),
+      ]);
 
-  async function loadData() {
+      if (user?.user?.role === "driver") {
+        const driverId = user.user._id;
+        const filteredTrucks = (allTrucks || []).filter(
+          (truck) => truck.assignedDriver?._id === driverId,
+        );
+        const filteredManifests = (allManifests || []).filter((manifest) => {
+          if (typeof manifest.driver === "string") {
+            return manifest.driver === driverId;
+          }
+          return (manifest.driver as any)?._id === driverId;
+        });
 
-    const [user, allTrucks, allManifests] = await Promise.all([
-      apiFetch<AuthUser>("/auth/profile"),
-      apiFetch<Truck[]>("/trucks"),
-      apiFetch<Manifest[]>("/manifests"),
-    ]);
-
-    if (user?.user?.role === "driver") {
-      const driverId = user.user._id;
-      const trucks = allTrucks.filter(
-        (truck) => truck.assignedDriver?._id === driverId,
-      );
-      const manifests = allManifests.filter((manifest) => {
-        if (typeof manifest.driver === "string") {
-          return manifest.driver === driverId;
-        }
-        return (manifest.driver as any)?._id === driverId;
-      });
-
-      return { user, trucks, manifests };
+        setTrucks(filteredTrucks);
+        setManifests(filteredManifests);
+      } else {
+        setTrucks(allTrucks || []);
+        setManifests(allManifests || []);
+      }
+      setError(null)
+    } catch (err: any) {
+      console.error("Failed to load dashboard data:", err);
+      setError(err?.message || "Something went wrong while fetching data");
+    } finally {
+      setLoading(false)
     }
+  }, [])
 
-    return { user, trucks: allTrucks, manifests: allManifests };
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  if (loading) {
+    return (
+      <div className="col-span-12 flex h-64 items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+          <p className="text-sm text-slate-500 font-medium">Loading dashboard statistics...</p>
+        </div>
+      </div>
+    )
   }
 
-  const { user, trucks, manifests } = await loadData()
+  if (error) {
+    return (
+      <div className="col-span-12 flex h-64 flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50 p-6 text-center">
+        <p className="text-sm font-semibold text-red-900">Failed to load logistics data</p>
+        <p className="mt-1 text-xs text-red-600">{error}</p>
+        <button
+          onClick={() => loadData()}
+          className="mt-4 rounded-xl bg-red-600 px-5 py-2 text-xs font-semibold text-white shadow-soft transition hover:bg-red-700 active:scale-95"
+        >
+          Try Again
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-5">
@@ -55,8 +98,8 @@ export async function AdminDashboard() {
         </div>
       </section>
 
-      <TrucksCard trucks={trucks || []} />
-      <ManifestsCard manifests={manifests || []} />
+      <TrucksCard trucks={trucks} />
+      <ManifestsCard manifests={manifests} />
     </div>
   )
 }
