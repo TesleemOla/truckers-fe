@@ -9,7 +9,6 @@ import { useAuth } from "./context/AuthContext";
 export default function LandingPage() {
   const { user } = useAuth()
 
-  // If no user is authenticated, show a beautiful landing page
   if (!user) {
     return (
       <div className="relative flex flex-col items-center justify-center py-12 text-center min-h-[80vh]">
