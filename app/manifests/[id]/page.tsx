@@ -232,7 +232,7 @@ export default function ManifestDetailPage() {
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-full border border-red-500/40 px-3 py-1.5 text-red-300 hover:bg-red-500/10 hover:text-red-200"
+            className="bg-red-600 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-white hover:bg-red-700 shadow-sm transition-all"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Delete
@@ -525,7 +525,7 @@ export default function ManifestDetailPage() {
               <button
                 type="button"
                 onClick={handleDelete}
-                className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-4 py-1.5 font-medium text-white shadow hover:bg-red-500"
+                className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-4 py-1.5 font-medium text-white shadow hover:bg-red-700 transition-colors"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Delete
