@@ -30,7 +30,7 @@ export default function ManifestsPage() {
       }
     })();
   }, []);
-  console.log(manifests)
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3">
@@ -39,10 +39,10 @@ export default function ManifestsPage() {
             <FileText className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-slate-50">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
               Manifests
             </h2>
-            <p className="text-xs text-slate-900">
+            <p className="text-xs text-slate-600">
               Route-level detail for every load.
             </p>
           </div>
@@ -59,7 +59,7 @@ export default function ManifestsPage() {
       </div>
 
       <div className="glass-card divide-y divide-slate-800/80">
-        <div className="grid grid-cols-3 gap-2 px-5 py-3 text-3em text-slate-900 sm:px-6">
+        <div className="grid grid-cols-3 gap-2 px-5 py-3 text-xs font-semibold text-slate-500 sm:px-6">
           <span>Truck</span>
           <span className="hidden text-center sm:block">Route</span>
           <span className="text-right">Status</span>
@@ -82,41 +82,39 @@ export default function ManifestsPage() {
 
         {!loading &&
           !error &&
-          manifests.map((m) => (
-            manifests.map((m) => (
-              <div
-                key={m._id}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    router.push(`/manifests/${m._id}`);
-                  }
-                }}
-                className="grid w-full cursor-pointer grid-cols-3 gap-2 px-5 py-3 text-left text-xs hover:bg-slate-200/70 sm:px-6"
-                onClick={() => router.push(`/manifests/${m._id}`)}
-              >
-                <div>
-                  <p className="font-medium text-slate-800">
-                    {m.manifestNumber}
-                  </p>
-                  <p className="mt-0.5 text-3em text-slate-900">
-                    Truck{" "}
-                    {typeof m.truck === "string"
-                      ? m.truck
-                      : m.truck.truckNumber ?? "N/A"}
-                  </p>
-                </div>
-                <div className="hidden text-center text-3em text-slate-900 sm:block">
-                  From: {m.origin.address} <br />
-                  To: {m.destination.address}
-                </div>
-                <div className="text-right text-3em text-slate-900">
-                  {m.status}
-                </div>
+          manifests?.map((m) => (
+            <div
+              key={m._id}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  router.push(`/manifests/${m._id}`);
+                }
+              }}
+              className="grid w-full cursor-pointer grid-cols-3 gap-2 px-5 py-3 text-left text-xs hover:bg-slate-200/70 sm:px-6"
+              onClick={() => router.push(`/manifests/${m._id}`)}
+            >
+              <div>
+                <p className="font-medium text-slate-800">
+                  {m.manifestNumber}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Truck{" "}
+                  {typeof m.truck === "string"
+                    ? m.truck
+                    : m.truck?.truckNumber ?? "N/A"}
+                </p>
               </div>
-            )))
-          )}
+              <div className="hidden text-center text-[11px] text-slate-600 sm:block">
+                From: {m.origin?.address ?? "N/A"} <br />
+                To: {m.destination?.address ?? "N/A"}
+              </div>
+              <div className="text-right text-[11px] text-slate-500">
+                {m.status}
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );

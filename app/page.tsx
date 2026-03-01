@@ -96,14 +96,16 @@ export default function LandingPage() {
               ".  " + "Your location details and Manifest details are updated in real-time."}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => logout()}
-          className="p-4 inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-red-600 text-white text-xs"
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          Sign out
-        </button>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="p-4 inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-red-600 text-white text-xs"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Sign out
+          </button>
+        </div>
       </div>
       {
         user?.user?.role === "admin" ? (

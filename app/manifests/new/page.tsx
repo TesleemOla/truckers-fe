@@ -86,7 +86,7 @@ export default function NewManifestPage() {
         notes: notes || undefined,
       });
       toast.success("Manifest created successfully.");
-      router.push(`/manifests`);
+      router.push(`/manifests/${created._id}`);
     } catch (err) {
       if (isBackendError(err)) {
         toast.error(err.message);
@@ -182,57 +182,21 @@ export default function NewManifestPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-slate-800">Origin</p>
             <div className="space-y-1.5">
               <AddressAutocomplete
-                label="Address"
+                label="Origin Address"
                 required
                 value={origin.address}
                 onChange={(val) => setOrigin(o => ({ ...o, address: val }))}
                 onSelect={(data) => setOrigin(o => ({ ...o, address: data.address, latitude: data.lat, longitude: data.lon }))}
               />
             </div>
-
-            <div className="flex items-end gap-2">
-              <div className="grid flex-1 gap-2 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-slate-700">
-                    Latitude
-                  </label>
-                  <input
-                    required
-                    value={origin.latitude}
-                    onChange={(e) =>
-                      setOrigin((o) => ({ ...o, latitude: e.target.value }))
-                    }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-slate-700">
-                    Longitude
-                  </label>
-                  <input
-                    required
-                    value={origin.longitude}
-                    onChange={(e) =>
-                      setOrigin((o) => ({ ...o, longitude: e.target.value }))
-                    }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                </div>
-              </div>
-
-            </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-slate-800">
-              Destination
-            </p>
             <div className="space-y-1.5">
               <AddressAutocomplete
-                label="Address"
+                label="Destination Address"
                 required
                 value={destination.address}
                 onChange={(val) => setDestination(d => ({ ...d, address: val }))}
@@ -240,41 +204,6 @@ export default function NewManifestPage() {
               />
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-700">
-                  Latitude
-                </label>
-                <input
-                  required
-                  value={destination.latitude}
-                  onChange={(e) =>
-                    setDestination((d) => ({
-                      ...d,
-                      latitude: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-700">
-                  Longitude
-                </label>
-                <input
-                  required
-                  value={destination.longitude}
-                  onChange={(e) =>
-                    setDestination((d) => ({
-                      ...d,
-                      longitude: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                />
-              </div>
-
-            </div>
           </div>
         </div>
 
