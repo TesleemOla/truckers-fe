@@ -24,7 +24,6 @@ export default function TruckStatusCard({
     const [currentAddress, setCurrentAddress] = useState<string | null>(null);
     const [localTruck, setLocalTruck] = useState<Truck | undefined>(myTruck);
 
-    // Sync localTruck when myTruck prop changes
     useEffect(() => {
         setLocalTruck(myTruck);
     }, [myTruck]);
