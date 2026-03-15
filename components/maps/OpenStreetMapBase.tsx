@@ -13,12 +13,27 @@ const containerStyle: React.CSSProperties = {
   overflow: "hidden",
 };
 
-// Red Truck SVG
+// Icons
 const truckSvg = `
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M20 13V17C20 18.1046 19.1046 19 18 19H17.8297C17.4175 17.8348 16.3062 17 15 17C13.6938 17 12.5825 17.8348 12.1703 19H7.82967C7.41746 17.8348 6.30622 17 5 17C3.69378 17 2.58254 17.8348 2.17033 19H2V11C2 9.89543 2.89543 9 4 9H13V13H20ZM14 13V7H17L22 12V13H14Z" fill="#ef4444"/>
-  <circle cx="5" cy="19" r="2" fill="#1f2937"/>
-  <circle cx="15" cy="19" r="2" fill="#1f2937"/>
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="20" r="18" fill="white" stroke="#3b82f6" stroke-width="3" />
+  <path d="M28 16V21C28 22.1046 27.1046 23 26 23H25.8297C25.4175 21.8348 24.3062 21 23 21C21.6938 21 20.5825 21.8348 20.1703 23H13.8297C13.4175 21.8348 12.3062 21 11 21C9.69378 21 8.58254 21.8348 8.17033 23H8V14C8 12.8954 8.89543 12 10 12H19V16H28ZM20 16V10H23L27.5 14.5V16H20Z" fill="#3b82f6" />
+  <circle cx="11" cy="23" r="2.5" fill="#1e3a8a" />
+  <circle cx="23" cy="23" r="2.5" fill="#1e3a8a" />
+</svg>
+`;
+
+const originSvg = `
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M16 2C10.477 2 6 6.477 6 12C6 21 16 30 16 30C16 30 26 21 26 12C26 6.477 21.523 2 16 2ZM16 16C13.791 16 12 14.209 12 12C12 9.791 13.791 8 16 8C18.209 8 20 9.791 20 12C20 14.209 18.209 16 16 16Z" fill="#10b981"/>
+  <circle cx="16" cy="12" r="4" fill="white"/>
+</svg>
+`;
+
+const destinationSvg = `
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M16 2C10.477 2 6 6.477 6 12C6 21 16 30 16 30C16 30 26 21 26 12C26 6.477 21.523 2 16 2ZM16 16C13.791 16 12 14.209 12 12C12 9.791 13.791 8 16 8C18.209 8 20 9.791 20 12C20 14.209 18.209 16 16 16Z" fill="#ef4444"/>
+  <circle cx="16" cy="12" r="4" fill="white"/>
 </svg>
 `;
 
@@ -46,7 +61,7 @@ export default function OpenStreetMapBase({
   polyline?: LatLng[];
   markerLabels?: string[];
 }) {
-  const [truckIcon, setTruckIcon] = useState<any>(null);
+  const [icons, setIcons] = useState<{ origin: any; destination: any; truck: any } | null>(null);
   const [routedPath, setRoutedPath] = useState<[number, number][]>([]);
 
   // Track the most recent truck position for the camera
@@ -55,13 +70,20 @@ export default function OpenStreetMapBase({
   useEffect(() => {
     const initLeaflet = async () => {
       const L = (await import("leaflet")).default;
-      const icon = new L.Icon({
-        iconUrl: `data:image/svg+xml;base64,${btoa(truckSvg)}`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -16],
+
+      const createIcon = (svg: string, size: [number, number], anchor: [number, number]) =>
+        new L.Icon({
+          iconUrl: `data:image/svg+xml;base64,${btoa(svg)}`,
+          iconSize: size,
+          iconAnchor: anchor,
+          popupAnchor: [0, -anchor[1]],
+        });
+
+      setIcons({
+        origin: createIcon(originSvg, [32, 32], [16, 32]),
+        destination: createIcon(destinationSvg, [32, 32], [16, 32]),
+        truck: createIcon(truckSvg, [40, 40], [20, 20]),
       });
-      setTruckIcon(icon);
     };
     initLeaflet();
   }, []);
@@ -123,11 +145,21 @@ export default function OpenStreetMapBase({
         />
       )}
 
-      {truckIcon && markers.map((marker, index) => (
-        <Marker key={`truck-${index}`} position={[marker.lat, marker.lng]} icon={truckIcon}>
-          {markerLabels[index] && <Popup>{markerLabels[index]}</Popup>}
-        </Marker>
-      ))}
+      {icons && markers.map((marker, index) => {
+        const label = markerLabels[index] || "";
+        let icon = icons.truck;
+        if (label.toLowerCase() === "origin" || label.toLowerCase() === "departure") {
+          icon = icons.origin;
+        } else if (label.toLowerCase() === "destination") {
+          icon = icons.destination;
+        }
+
+        return (
+          <Marker key={`marker-${index}`} position={[marker.lat, marker.lng]} icon={icon}>
+            {label && <Popup>{label}</Popup>}
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 }
