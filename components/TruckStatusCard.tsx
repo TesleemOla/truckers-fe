@@ -160,7 +160,7 @@ export default function TruckStatusCard({
                 console.error("Geolocation watch error:", error);
                 if (error.code === error.PERMISSION_DENIED) {
                     setIsAutoTracking(false);
-                    toast.error("Location permission denied. Disabled automatic tracking.");
+                    toast.error("Automatic tracking disabled. Please enable you device location!");
                 }
             },
             {
