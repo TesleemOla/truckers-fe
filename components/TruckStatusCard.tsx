@@ -23,6 +23,7 @@ export default function TruckStatusCard({
 }: TruckStatusCardProps) {
     const [currentAddress, setCurrentAddress] = useState<string | null>(null);
     const [localTruck, setLocalTruck] = useState<Truck | undefined>(myTruck);
+    const [isAutoTracking, setIsAutoTracking] = useState<boolean>(true);
 
     useEffect(() => {
         setLocalTruck(myTruck);
@@ -32,27 +33,29 @@ export default function TruckStatusCard({
     useEffect(() => {
         if (!localTruck?._id) return;
 
+        const truckId = localTruck._id;
+
         // Ensure socket is connected
         if (!socket.connected) {
             socket.connect();
         }
 
         // Join the truck's specific room
-        socket.emit("joinTruck", localTruck._id);
+        socket.emit("joinTruck", truckId);
 
         // Listen for location updates
         const handleLocationUpdate = (payload: any) => {
             console.log("Real-time truck location update received:", payload);
-            if (payload.truckId === localTruck._id) {
+            if (payload.truckId === truckId) {
                 setLocalTruck(prev => {
                     if (!prev) return prev;
                     return {
                         ...prev,
                         currentLocation: {
                             ...prev.currentLocation,
-                            latitude: payload.latitude,
-                            longitude: payload.longitude,
-                            address: payload.address || prev.currentLocation?.address,
+                            latitude: payload.location?.latitude || payload.latitude,
+                            longitude: payload.location?.longitude || payload.longitude,
+                            address: payload.location?.address || payload.address || prev.currentLocation?.address,
                             lastUpdated: payload.timestamp || new Date().toISOString(),
                         }
                     };
@@ -62,7 +65,7 @@ export default function TruckStatusCard({
 
         // Also listen to global updates if necessary
         const handleGlobalUpdate = (payload: any) => {
-            if (payload.truckId === localTruck._id) {
+            if (payload.truckId === truckId) {
                 handleLocationUpdate(payload);
             }
         };
@@ -124,8 +127,56 @@ export default function TruckStatusCard({
         localTruck?.currentLocation?.address,
     ]);
 
+    // Implement watchPosition for hands-free live tracking
+    useEffect(() => {
+        if (!isAutoTracking || !localTruck?._id || !navigator.geolocation) return;
+
+        const truckId = localTruck._id;
+        let lastUpdateTime = 0;
+        // Throttle to 10 seconds to avoid spamming the backend API
+        const THROTTLE_MS = 10000;
+
+        const watchId = navigator.geolocation.watchPosition(
+            async (position) => {
+                const now = Date.now();
+                if (now - lastUpdateTime < THROTTLE_MS) return;
+                lastUpdateTime = now;
+
+                const { latitude, longitude } = position.coords;
+                try {
+                    // Update location via API - this will trigger the backend's websocket emit
+                    await updateTruckLocation(truckId, { latitude, longitude });
+                    if (activeManifestId) {
+                        await updateManifestLocation(activeManifestId, {
+                            latitude,
+                            longitude,
+                        });
+                    }
+                } catch (error) {
+                    console.error("Auto-update location failed:", error);
+                }
+            },
+            (error) => {
+                console.error("Geolocation watch error:", error);
+                if (error.code === error.PERMISSION_DENIED) {
+                    setIsAutoTracking(false);
+                    toast.error("Location permission denied. Disabled automatic tracking.");
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 10000,
+                timeout: 10000,
+            }
+        );
+
+        return () => navigator.geolocation.clearWatch(watchId);
+    }, [isAutoTracking, localTruck?._id, activeManifestId]);
+
     const handleUpdateLocation = () => {
-        if (!localTruck) return;
+        if (!localTruck?._id) return;
+        const truckId = localTruck._id;
+
         if (!navigator.geolocation) {
             toast.error("Geolocation is not supported by your browser");
             return;
@@ -136,7 +187,7 @@ export default function TruckStatusCard({
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    await updateTruckLocation(localTruck._id, { latitude, longitude });
+                    await updateTruckLocation(truckId, { latitude, longitude });
                     if (activeManifestId) {
                         await updateManifestLocation(activeManifestId, {
                             latitude,
@@ -208,13 +259,25 @@ export default function TruckStatusCard({
                 </div>
             </div>
 
-            <button
-                onClick={handleUpdateLocation}
-                disabled={loading}
-                className="btn-primary w-full"
-            >
-                {loading ? "Updating..." : "Update My Location"}
-            </button>
+            <div className="flex items-center gap-3 w-full">
+                <button
+                    onClick={handleUpdateLocation}
+                    disabled={loading}
+                    className="btn-primary flex-1"
+                >
+                    {loading ? "Updating..." : "Update Now"}
+                </button>
+                <button
+                    onClick={() => setIsAutoTracking(!isAutoTracking)}
+                    className={`px-4 py-3 rounded-xl font-medium border transition-colors flex items-center gap-2 ${isAutoTracking
+                        ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                >
+                    <div className={`w-2 h-2 rounded-full ${isAutoTracking ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></div>
+                    {isAutoTracking ? "Auto: ON" : "Auto: OFF"}
+                </button>
+            </div>
         </div>
     );
 }
